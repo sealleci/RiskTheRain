@@ -1,0 +1,31 @@
+{
+  "RiskTheRain:GlassStrength": {
+    "NAME": "玻璃力量",
+    "DESCRIPTIONS": [
+      "角色造成 #b",
+      " 倍伤害。"
+    ]
+  },
+  "RiskTheRain:ScarabShield": {
+    "NAME": "圣甲虫护盾",
+    "DESCRIPTIONS": [
+      "在回合开始时获得 #b",
+      " 点 #y格档 。"
+    ]
+  },
+  "RiskTheRain:ScarabRecovery": {
+    "NAME": "圣甲虫恢复",
+    "DESCRIPTIONS": [
+      "将在 #b",
+      " 个回合后回满 #y圣甲虫护盾 。"
+    ]
+  },
+  "RiskTheRain:BrittleCoin": {
+    "NAME": "易碎金币",
+    "DESCRIPTIONS": [
+      "在战斗结束后，你将获得 #b",
+      "在战斗结束后，你将失去 #b",
+      " #y金币 。"
+    ]
+  }
+}

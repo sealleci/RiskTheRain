@@ -1,0 +1,9 @@
+{
+  "RiskTheRain:GlassStrength": {
+    "NAME": "玻璃力量",
+    "DESCRIPTIONS": [
+      "角色造成 #y",
+      " 倍伤害。"
+    ]
+  }
+}

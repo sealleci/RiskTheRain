@@ -1,0 +1,42 @@
+{
+  "RiskTheRain:ShapedGlass": {
+    "NAME": "塑型玻璃",
+    "FLAVOR": "伤害上升……生命降低",
+    "DESCRIPTIONS": [
+      "角色伤害增加",
+      "%，生命上限减少",
+      "%。"
+    ]
+  },
+  "RiskTheRain:Transcendence": {
+    "NAME": "超然",
+    "FLAVOR": "将生命化作格档",
+    "DESCRIPTIONS": [
+      "角色血上限降至",
+      "点，每场战斗开始时获得",
+      "倍原始生命上限的不消失的格档。当所给予的格档值减少时，将在",
+      "回合后回满。"
+    ]
+  },
+  "RiskTheRain:BrittleCrown": {
+    "NAME": "易碎王冠",
+    "FLAVOR": "攻击得钱……受伤失钱",
+    "DESCRIPTIONS": [
+      "角色每造成",
+      "点未格档的伤害将增加",
+      "层易碎金币，每受到",
+      "点未格档的伤害将减少",
+      "层易碎金币。战斗结束后，根据易碎金币的层数来结算金币，每",
+      "层易碎金币对应",
+      "金币。"
+    ]
+  },
+  "RiskTheRain:BeadsOfFealty": {
+    "NAME": "忠诚佛珠",
+    "FLAVOR": "看似无用……但……",
+    "DESCRIPTIONS": [
+      "每个忠诚佛珠可充当",
+      "个钥匙碎片。"
+    ]
+  }
+}
