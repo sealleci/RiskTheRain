@@ -12,7 +12,7 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <steamFolder>E:/SteamPlatform/</steamFolder>
+        <steamFolder>C:/Program Files (x86)/Steam/</steamFolder>
         <workshopFolder>${steamFolder}steamapps/workshop/content/646570/</workshopFolder>
         <stsPath>${steamFolder}steamapps/common/SlayTheSpire/</stsPath>
         <SlayTheSpire.version>2.2</SlayTheSpire.version>
