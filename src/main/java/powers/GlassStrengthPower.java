@@ -3,6 +3,8 @@ package powers;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
+import com.megacrit.cardcrawl.actions.AbstractGameAction;
+import com.megacrit.cardcrawl.actions.common.RemoveSpecificPowerAction;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.cards.DamageInfo;
 import com.megacrit.cardcrawl.core.AbstractCreature;
@@ -10,7 +12,7 @@ import com.megacrit.cardcrawl.localization.PowerStrings;
 import com.megacrit.cardcrawl.powers.AbstractPower;
 import riskTheRain.RiskTheRain;
 
-public class GlassStrength extends AbstractPower {
+public class GlassStrengthPower extends AbstractPower {
     private static final String SIGN = "GlassStrength";
     public static final String POWER_ID = RiskTheRain.decorateId(SIGN);
     private static final PowerStrings powerStrings;
@@ -25,19 +27,16 @@ public class GlassStrength extends AbstractPower {
         DESCRIPTIONS = powerStrings.DESCRIPTIONS;
     }
 
-    public GlassStrength(AbstractCreature owner, int amount) {
-        try {
-            this.name = NAME;
-            this.ID = POWER_ID;
-            this.owner = owner;
-            this.MULTIPLYING = amount * BASE;
-            this.amount = amount;
-            this.region128 = new TextureAtlas.AtlasRegion(new Texture(RiskTheRain.getPowerImagePath(SIGN + "84.png")), 0, 0, 84, 84);
-            this.region48 = new TextureAtlas.AtlasRegion(new Texture(RiskTheRain.getPowerImagePath(SIGN + "32.png")), 0, 0, 32, 32);
-            updateDescription();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public GlassStrengthPower(AbstractCreature owner, int amount) {
+        this.name = NAME;
+        this.ID = POWER_ID;
+        this.owner = owner;
+        this.MULTIPLYING = amount * BASE;
+        this.amount = amount;
+        this.region128 = new TextureAtlas.AtlasRegion(new Texture(RiskTheRain.getPowerImagePath(SIGN + "84.png")), 0, 0, 84, 84);
+        this.region48 = new TextureAtlas.AtlasRegion(new Texture(RiskTheRain.getPowerImagePath(SIGN + "32.png")), 0, 0, 32, 32);
+        this.type = AbstractPower.PowerType.BUFF;
+        updateDescription();
     }
 
     @Override
@@ -59,6 +58,35 @@ public class GlassStrength extends AbstractPower {
         this.fontScale = 8.0f;
         MULTIPLYING += stackAmount * BASE;
         this.amount += stackAmount;
+        if (this.amount == 0) {
+            addToTop(new RemoveSpecificPowerAction(this.owner, this.owner, POWER_ID));
+        }
+        if (this.amount >= 999) {
+            this.amount = 999;
+            MULTIPLYING = 999 * BASE;
+        }
+        if (this.amount <= 0) {
+            this.amount = 0;
+            MULTIPLYING = 0;
+        }
+    }
+
+    @Override
+    public void reducePower(int reduceAmount) {
+        this.fontScale = 8.0f;
+        MULTIPLYING -= reduceAmount * BASE;
+        this.amount -= reduceAmount;
+        if (this.amount == 0) {
+            addToTop(new RemoveSpecificPowerAction(this.owner, this.owner, POWER_ID));
+        }
+        if (this.amount >= 999) {
+            this.amount = 999;
+            MULTIPLYING = 999 * BASE;
+        }
+        if (this.amount <= 0) {
+            this.amount = 0;
+            MULTIPLYING = 0;
+        }
     }
 
     @Override
