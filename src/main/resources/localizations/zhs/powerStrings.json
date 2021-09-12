@@ -6,13 +6,6 @@
       "% 。"
     ]
   },
-  "RiskTheRain:ScarabShield": {
-    "NAME": "圣甲虫护盾",
-    "DESCRIPTIONS": [
-      "在回合开始时获得 #b",
-      " 点 #y格档 。"
-    ]
-  },
   "RiskTheRain:ScarabRecovery": {
     "NAME": "圣甲虫恢复",
     "DESCRIPTIONS": [

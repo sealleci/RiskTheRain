@@ -1,9 +1,12 @@
 package relics;
 
 import basemod.abstracts.CustomRelic;
+import basemod.abstracts.CustomSavable;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.graphics.Texture;
+import com.google.gson.reflect.TypeToken;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
+import com.megacrit.cardcrawl.actions.common.ReducePowerAction;
 import com.megacrit.cardcrawl.actions.common.RelicAboveCreatureAction;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
@@ -13,17 +16,18 @@ import lunar.LunarRelic;
 import riskTheRain.RiskTheRain;
 import powers.GlassStrengthPower;
 
-public class ShapedGlass extends CustomRelic implements LunarRelic {
+import java.lang.reflect.Type;
+
+public class ShapedGlass extends CustomRelic implements LunarRelic, CustomSavable<Integer> {
     private static final String SIGN = "ShapedGlass";
     public static final String ID = RiskTheRain.decorateId(SIGN);
     public static final Texture IMG = new Texture(RiskTheRain.getRelicImagePath(SIGN + ".png"));
     public static final Texture OUTLINE = new Texture(RiskTheRain.getOutlineImagePath(SIGN + ".png"));
-    private static final int DMG_INC = 25;
     private static final int HP_DEC = 25;
+    private static final int POWER_AMOUNT = 1;
     private int hpLoss = 0;
-    private int price = 250;
-    private int lunarPrice = 5;
     private boolean isApplied = false;
+    private static final String GLASSSTRENGTH_ID=  RiskTheRain.decorateId("GlassStrength");
 
     public ShapedGlass() {
 
@@ -35,27 +39,27 @@ public class ShapedGlass extends CustomRelic implements LunarRelic {
         return String.format(
                 "%s%d%s%d%s",
                 DESCRIPTIONS[0],
-                DMG_INC,
-                DESCRIPTIONS[1],
                 HP_DEC,
+                DESCRIPTIONS[1],
+                POWER_AMOUNT,
                 DESCRIPTIONS[2]
         );
     }
 
-    private void applyMultiplying() {
+    private void applyEffect() {
         if (!isApplied) {
             AbstractPlayer player = AbstractDungeon.player;
             this.flash();
-            addToBot(new ApplyPowerAction(player, player, new GlassStrengthPower(player, 1), 1));
+            addToBot(new ApplyPowerAction(player, player, new GlassStrengthPower(player, POWER_AMOUNT), POWER_AMOUNT));
             addToBot(new RelicAboveCreatureAction(player, this));
             isApplied = true;
         }
     }
 
-    private void revokeMultiplying() {
+    private void revokeEffect() {
         if (isApplied) {
             AbstractPlayer player = AbstractDungeon.player;
-            addToBot(new ApplyPowerAction(player, player, new GlassStrengthPower(player, -1), -1));
+            addToBot(new ReducePowerAction(player, player, GLASSSTRENGTH_ID, POWER_AMOUNT));
             isApplied = false;
         }
     }
@@ -70,7 +74,7 @@ public class ShapedGlass extends CustomRelic implements LunarRelic {
             }
             AbstractDungeon.player.decreaseMaxHealth(hpLoss);
             if ((AbstractDungeon.getCurrRoom()).phase == AbstractRoom.RoomPhase.COMBAT) {
-                applyMultiplying();
+                applyEffect();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -82,7 +86,7 @@ public class ShapedGlass extends CustomRelic implements LunarRelic {
         try {
             AbstractDungeon.player.increaseMaxHp(hpLoss, false);
             if ((AbstractDungeon.getCurrRoom()).phase == AbstractRoom.RoomPhase.COMBAT) {
-                revokeMultiplying();
+                revokeEffect();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,7 +97,7 @@ public class ShapedGlass extends CustomRelic implements LunarRelic {
     public void atBattleStart() {
         try {
             isApplied = false;
-            applyMultiplying();
+            applyEffect();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -102,7 +106,7 @@ public class ShapedGlass extends CustomRelic implements LunarRelic {
     @Override
     public void atTurnStart() {
         try {
-            applyMultiplying();
+            applyEffect();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -110,16 +114,51 @@ public class ShapedGlass extends CustomRelic implements LunarRelic {
 
     @Override
     public int getPrice() {
-        return price;
+        return 250;
     }
 
     @Override
-    public int getLunarPrice(){
-        return lunarPrice;
+    public int getLunarPrice() {
+        return 5;
     }
 
     @Override
     public AbstractRelic makeCopy() {
         return new ShapedGlass();
     }
+
+    @Override
+    public Integer onSave() {
+        return this.hpLoss;
+    }
+
+    @Override
+    public void onLoad(Integer hpLoss) {
+        if (hpLoss != null) {
+            this.hpLoss = hpLoss;
+        }
+    }
+
+    @Override
+    public Type savedType() {
+        return new TypeToken<Integer>() {
+        }.getType();
+    }
+
+/*
+   //抛去格挡后的伤害
+   @Override
+   public int onAttacked(DamageInfo info, int damageAmount) {
+       System.out.println(AbstractDungeon.player.currentBlock + "," + damageAmount);
+       return damageAmount;
+   }
+*/
+
+/*
+    //抛去格挡后的伤害
+    @Override
+    public void onAttack(DamageInfo info, int damageAmount, AbstractCreature target) {
+        System.out.println(target.currentBlock + "," + damageAmount);
+    }
+*/
 }

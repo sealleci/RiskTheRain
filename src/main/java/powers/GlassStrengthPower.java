@@ -43,9 +43,9 @@ public class GlassStrengthPower extends AbstractPower {
     public void updateDescription() {
         try {
             this.description = String.format(
-                    "%s%.2f%s",
+                    "%s%d%s",
                     DESCRIPTIONS[0],
-                    MULTIPLYING / 100.0f + 1.0f,
+                    MULTIPLYING,
                     DESCRIPTIONS[1]
             );
         } catch (Exception e) {

@@ -1,14 +1,17 @@
 package riskTheRain;
 
 import basemod.BaseMod;
+import basemod.interfaces.EditKeywordsSubscriber;
 import basemod.interfaces.EditRelicsSubscriber;
 import basemod.interfaces.EditStringsSubscriber;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.evacipated.cardcrawl.modthespire.lib.SpireInitializer;
+import com.google.gson.Gson;
 import com.megacrit.cardcrawl.core.AbstractCreature;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
+import com.evacipated.cardcrawl.mod.stslib.Keyword;
 import com.megacrit.cardcrawl.localization.PowerStrings;
 import com.megacrit.cardcrawl.localization.RelicStrings;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
@@ -21,11 +24,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 @SpireInitializer
-public class RiskTheRain implements EditRelicsSubscriber, EditStringsSubscriber {
+public class RiskTheRain implements EditRelicsSubscriber, EditStringsSubscriber, EditKeywordsSubscriber {
     private static final Logger logger = LogManager.getLogger(RiskTheRain.class.getName());
-    private static final String[] shopRelicIds = {"Transcendence", "ShapedGlass"};
-    private static final String ROOT_L10N_PATH = "localizations/";
+    private static final String[] lunarRelicIds = {"Transcendence", "ShapedGlass", "BrittleCrown"};
+    private static final String ROOT_L10N_PATH = "localizations";
     private static final String[] jsonFileNames = {"relicStrings.json", "powerStrings.json"};
+    private static final String keywordFileName = "keywordStrings.json";
     private static final Class<?>[] stringClasses = {RelicStrings.class, PowerStrings.class};
     public static int playerShielding = 0;
     public static ArrayList<Integer> monsterShielding = new ArrayList<>();
@@ -69,24 +73,18 @@ public class RiskTheRain implements EditRelicsSubscriber, EditStringsSubscriber 
         return Gdx.files.internal("images/powers/" + resource);
     }
 
-    public static int getMaxBlueShieldNumber(AbstractCreature creature) {
+    public static int getMaxBlueShield(AbstractCreature creature) {
         if (creature == null) {
             return 1;
         }
         return CreatureHealthPatch.RTRCreatureFields.maxBlueShield.get(creature);
     }
 
-    public static int getBlueShieldNumber(AbstractCreature creature) {
+    public static int getBlueShield(AbstractCreature creature) {
         if (creature == null) {
             return 0;
         }
         return CreatureHealthPatch.RTRCreatureFields.blueShield.get(creature);
-    }
-    public static void setMaxBlueShield(AbstractCreature creature, int amt) {
-        if (creature == null) {
-            return;
-        }
-        CreatureHealthPatch.RTRCreatureFields.maxBlueShield.set(creature, amt);
     }
 
     public static void setBlueShield(AbstractCreature creature, int amt) {
@@ -94,13 +92,51 @@ public class RiskTheRain implements EditRelicsSubscriber, EditStringsSubscriber 
             return;
         }
         CreatureHealthPatch.RTRCreatureFields.blueShield.set(creature, amt);
+        if (CreatureHealthPatch.RTRCreatureFields.blueShield.get(creature) < 0) {
+            CreatureHealthPatch.RTRCreatureFields.blueShield.set(creature, 0);
+        }
+        if (CreatureHealthPatch.RTRCreatureFields.blueShield.get(creature) >
+                CreatureHealthPatch.RTRCreatureFields.maxBlueShield.get(creature)) {
+            CreatureHealthPatch.RTRCreatureFields.blueShield.set(creature,
+                    CreatureHealthPatch.RTRCreatureFields.maxBlueShield.get(creature));
+        }
     }
 
     public static void addBlueShield(AbstractCreature creature, int amt) {
         if (creature == null) {
             return;
         }
-        CreatureHealthPatch.RTRCreatureFields.blueShield.set(creature, CreatureHealthPatch.RTRCreatureFields.blueShield.get(creature) + amt);
+        CreatureHealthPatch.RTRCreatureFields.blueShield.set(creature,
+                CreatureHealthPatch.RTRCreatureFields.blueShield.get(creature) + amt);
+        if (CreatureHealthPatch.RTRCreatureFields.blueShield.get(creature) < 0) {
+            CreatureHealthPatch.RTRCreatureFields.blueShield.set(creature, 0);
+        }
+        if (CreatureHealthPatch.RTRCreatureFields.blueShield.get(creature) >
+                CreatureHealthPatch.RTRCreatureFields.maxBlueShield.get(creature)) {
+            CreatureHealthPatch.RTRCreatureFields.blueShield.set(creature,
+                    CreatureHealthPatch.RTRCreatureFields.maxBlueShield.get(creature));
+        }
+    }
+
+    public static void setMaxBlueShield(AbstractCreature creature, int amt) {
+        if (creature == null) {
+            return;
+        }
+        CreatureHealthPatch.RTRCreatureFields.maxBlueShield.set(creature, amt);
+        if (CreatureHealthPatch.RTRCreatureFields.maxBlueShield.get(creature) < 0) {
+            CreatureHealthPatch.RTRCreatureFields.maxBlueShield.set(creature, 0);
+        }
+    }
+
+    public static void addMaxBlueShield(AbstractCreature creature, int amt) {
+        if (creature == null) {
+            return;
+        }
+        CreatureHealthPatch.RTRCreatureFields.maxBlueShield.set(creature,
+                CreatureHealthPatch.RTRCreatureFields.maxBlueShield.get(creature) + amt);
+        if (CreatureHealthPatch.RTRCreatureFields.maxBlueShield.get(creature) < 0) {
+            CreatureHealthPatch.RTRCreatureFields.maxBlueShield.set(creature, 0);
+        }
     }
 
     public static void clearBlueShield() {
@@ -144,7 +180,7 @@ public class RiskTheRain implements EditRelicsSubscriber, EditStringsSubscriber 
     public void receiveEditRelics() {
         logger.info(decorateInfo("add relics"));
         try {
-            for (String id : shopRelicIds) {
+            for (String id : lunarRelicIds) {
                 BaseMod.addRelicToCustomPool(getRelic(id), TheLunar.Enums.LUNAR_BLUE);
             }
         } catch (Exception e) {
@@ -153,18 +189,34 @@ public class RiskTheRain implements EditRelicsSubscriber, EditStringsSubscriber 
 
     }
 
+    private static String getL10NPath() {
+        switch (Settings.language) {
+            case ZHS:
+                return String.format("%s/%s", ROOT_L10N_PATH, "zhs");
+            case ENG:
+            default:
+                return String.format("%s/%s", ROOT_L10N_PATH, "eng");
+        }
+    }
+
     @Override
     public void receiveEditStrings() {
-        String L10N_DIR;
-
-        if (Settings.language == Settings.GameLanguage.ZHS) {
-            L10N_DIR = ROOT_L10N_PATH + "zhs";
-        } else {
-            L10N_DIR = ROOT_L10N_PATH + "eng";
-        }
+        String L10N_DIR = getL10NPath();
 
         for (int i = 0; i < jsonFileNames.length; ++i) {
             BaseMod.loadCustomStrings(stringClasses[i], getFileReadString(L10N_DIR, jsonFileNames[i]));
+        }
+    }
+
+    @Override
+    public void receiveEditKeywords() {
+        String L10N_DIR = getL10NPath();
+
+        String keywordJsonString = getFileReadString(L10N_DIR, keywordFileName);
+        Gson gson = new Gson();
+        Keyword[] keywords = gson.fromJson(keywordJsonString, Keyword[].class);
+        for (Keyword k : keywords) {
+            BaseMod.addKeyword(k.PROPER_NAME, k.NAMES, k.DESCRIPTION);
         }
     }
 }
