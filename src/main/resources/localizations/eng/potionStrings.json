@@ -1,0 +1,26 @@
+{
+  "RiskTheRain:HelfireTincture": {
+    "NAME": "狱火酊剂",
+    "DESCRIPTIONS": [
+      "获得三回合地狱火环：受伤+1，反甲12"
+    ]
+  },
+  "RiskTheRain:SpinelTonic": {
+    "NAME": "尖晶补剂",
+    "DESCRIPTIONS": [
+      "力敏集+8，递减-3"
+    ]
+  },
+  "RiskTheRain:EffigyOfGrief": {
+    "NAME": "哀伤雕像",
+    "DESCRIPTIONS": [
+      "敌方全体易伤虚弱2，自己脆弱1"
+    ]
+  },
+  "RiskTheRain:GlowingMeteorite": {
+    "NAME": "发光陨石",
+    "DESCRIPTIONS": [
+      "全体35伤害，自己15伤害。"
+    ]
+  }
+}

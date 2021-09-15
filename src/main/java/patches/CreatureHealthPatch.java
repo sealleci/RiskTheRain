@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.evacipated.cardcrawl.modthespire.lib.*;
 import com.megacrit.cardcrawl.cards.DamageInfo;
+import com.megacrit.cardcrawl.characters.AbstractPlayer;
 import com.megacrit.cardcrawl.core.AbstractCreature;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
@@ -13,8 +14,11 @@ import com.megacrit.cardcrawl.helpers.ImageMaster;
 import com.megacrit.cardcrawl.rooms.AbstractRoom;
 import javassist.CtBehavior;
 import powers.ScarabRecoveryPower;
+import relics.Transcendence;
 import riskTheRain.RiskTheRain;
 import vfx.combat.BlueShieldNumberEffect;
+
+import java.util.Objects;
 
 public class CreatureHealthPatch {
 
@@ -22,6 +26,37 @@ public class CreatureHealthPatch {
     public static class RTRCreatureFields {
         public static SpireField<Integer> blueShield = new SpireField<>(() -> 0);
         public static SpireField<Integer> maxBlueShield = new SpireField<>(() -> 0);
+    }
+
+    @SpirePatch(cls = "com.megacrit.cardcrawl.core.AbstractCreature", method = "increaseMaxHp")
+    public static class PlayerIncreaseHealthPatch {
+        public static void Prefix(AbstractCreature __instance, @ByRef int[] amount, boolean showEffect) {
+            if (!Settings.isEndless || !AbstractDungeon.player.hasBlight("FullBelly")) {
+                if (amount[0] > 0) {
+                    if (__instance instanceof AbstractPlayer) {
+                        Transcendence bug = (Transcendence) ((AbstractPlayer) __instance).getRelic(Transcendence.ID);
+                        if (bug != null && !bug.isRemoving) {
+                            amount[0] = bug.increaseHealth(amount[0]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @SpirePatch(cls = "com.megacrit.cardcrawl.core.AbstractCreature", method = "decreaseMaxHealth")
+    public static class PlayerDecreaseHealthPatch {
+        public static void Prefix(AbstractCreature __instance, @ByRef int[] amount) {
+            if (amount[0] > 0) {
+                if (__instance instanceof AbstractPlayer) {
+                    Transcendence bug = (Transcendence) ((AbstractPlayer) __instance).getRelic(Transcendence.ID);
+                    if (bug != null && !bug.isAdding) {
+                        amount[0] = bug.decreaseHealth(amount[0]);
+                    }
+                }
+            }
+
+        }
     }
 
     @SpirePatch(cls = "com.megacrit.cardcrawl.core.AbstractCreature", method = "decrementBlock")
@@ -35,7 +70,8 @@ public class CreatureHealthPatch {
                     int curShield = RTRCreatureFields.blueShield.get(__instance);
                     boolean isBlueShieldReduce = false;
                     if (maxShield > 0) {
-                        if (curShield > 0 && info.owner != __instance) {
+                        if (curShield > 0 && (info.type == DamageInfo.DamageType.NORMAL || !Objects.equals(info.owner, __instance))
+                        ) {
                             if (damageAmount > curShield) {
                                 damageAmount -= curShield;
                                 if (Settings.SHOW_DMG_BLOCK) {
@@ -85,9 +121,15 @@ public class CreatureHealthPatch {
                         }
                     }
                 } else {
-                    if (maxShield > 0 && damageAmount >= __instance.currentHealth) {
-                        damageAmount = __instance.currentHealth - 1;
+                    if (__instance instanceof AbstractPlayer) {
+                        Transcendence bug = (Transcendence) ((AbstractPlayer) __instance).getRelic(Transcendence.ID);
+                        if (bug != null &&
+                                maxShield > 0 &&
+                                damageAmount >= __instance.currentHealth) {
+                            damageAmount = __instance.currentHealth - 1;
+                        }
                     }
+
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -114,30 +156,37 @@ public class CreatureHealthPatch {
     //采用后缀的话，healthBarWidth的原来数值会因5/5满体力而被覆盖
     @SpirePatch(cls = "com.megacrit.cardcrawl.core.AbstractCreature", method = "healthBarUpdatedEvent")
     public static class HealthBarUpdatedEventPatch {
-        public static void Replace(AbstractCreature __instance) {
-            int curShield = RTRCreatureFields.blueShield.get(__instance);
+        public static SpireReturn<Void> Prefix(AbstractCreature __instance) {
             int maxShield = RTRCreatureFields.maxBlueShield.get(__instance);
-            ReflectionHacks.setPrivate(__instance, AbstractCreature.class, "healthBarAnimTimer", 1.2f);
-
             if (maxShield > 0) {
+                int curShield = RTRCreatureFields.blueShield.get(__instance);
+                ReflectionHacks.setPrivate(__instance, AbstractCreature.class, "healthBarAnimTimer", 1.2f);
                 ReflectionHacks.setPrivate(__instance, AbstractCreature.class, "targetHealthBarWidth",
                         __instance.hb.width * (__instance.currentHealth + curShield) / (__instance.maxHealth + maxShield));
+//                System.out.println((Float) ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "targetHealthBarWidth") +" "+
+//                        (Float) ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "healthBarWidth"));
+                if (__instance.currentHealth + curShield == __instance.maxHealth + maxShield) {
+                    ReflectionHacks.setPrivate(__instance, AbstractCreature.class, "healthBarWidth",
+                            ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "targetHealthBarWidth"));
+                } else if (__instance.currentHealth + curShield <= 0) {
+                    ReflectionHacks.setPrivate(__instance, AbstractCreature.class, "healthBarWidth", 0.0f);
+                    ReflectionHacks.setPrivate(__instance, AbstractCreature.class, "targetHealthBarWidth", 0.0f);
+                }
+                if ((Float) ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "targetHealthBarWidth") >
+                        (Float) ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "healthBarWidth")) {
+                    float threshold = __instance.hb.width * __instance.maxHealth / (__instance.maxHealth + maxShield);
+                    if ((Float) ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "targetHealthBarWidth") > threshold &&
+                            (Float) ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "healthBarWidth") <= threshold) {
+                        ReflectionHacks.setPrivate(__instance, AbstractCreature.class, "healthBarWidth",
+                                __instance.hb.width);
+                    } else {
+                        ReflectionHacks.setPrivate(__instance, AbstractCreature.class, "healthBarWidth",
+                                ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "targetHealthBarWidth"));
+                    }
+                }
+                return SpireReturn.Return();
             } else {
-                ReflectionHacks.setPrivate(__instance, AbstractCreature.class, "targetHealthBarWidth",
-                        __instance.hb.width * __instance.currentHealth / __instance.maxHealth);
-            }
-
-            if (__instance.currentHealth + curShield == __instance.maxHealth + maxShield) {
-                ReflectionHacks.setPrivate(__instance, AbstractCreature.class, "healthBarWidth",
-                        ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "targetHealthBarWidth"));
-            } else if (__instance.currentHealth + curShield <= 0) {
-                ReflectionHacks.setPrivate(__instance, AbstractCreature.class, "healthBarWidth", 0.0f);
-                ReflectionHacks.setPrivate(__instance, AbstractCreature.class, "targetHealthBarWidth", 0.0f);
-            }
-            if ((Float) ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "targetHealthBarWidth") >
-                    (Float) ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "healthBarWidth")) {
-                ReflectionHacks.setPrivate(__instance, AbstractCreature.class, "healthBarWidth",
-                        ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "targetHealthBarWidth"));
+                return SpireReturn.Continue();
             }
         }
     }
@@ -160,21 +209,26 @@ public class CreatureHealthPatch {
 
     @SpirePatch(cls = "com.megacrit.cardcrawl.core.AbstractCreature", method = "renderHealthText")
     public static class RenderHealthTextPatch {
-        public static void Replace(AbstractCreature __instance, SpriteBatch sb, float y) {
+        public static SpireReturn<Void> Prefix(AbstractCreature __instance, SpriteBatch sb, float y) {
             int maxShield = RTRCreatureFields.maxBlueShield.get(__instance);
-            if (maxShield <= 0) {
-                float HEALTH_BAR_OFFSET_Y = ReflectionHacks.getPrivateStatic(AbstractCreature.class, "HEALTH_BAR_OFFSET_Y");
-                float HEALTH_TEXT_OFFSET_Y = ReflectionHacks.getPrivateStatic(AbstractCreature.class, "HEALTH_TEXT_OFFSET_Y");
-                Color hbTextColor = ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "hbTextColor");
-                if ((Float) ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "targetHealthBarWidth") != 0.0F) {
-                    float tmp = hbTextColor.a;
-                    hbTextColor.a *= (float) ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "healthHideTimer");
-                    FontHelper.renderFontCentered(sb, FontHelper.healthInfoFont, __instance.currentHealth + "/" + __instance.maxHealth, __instance.hb.cX, y + HEALTH_BAR_OFFSET_Y + HEALTH_TEXT_OFFSET_Y + 5.0F * Settings.scale, hbTextColor);
-                    hbTextColor.a = tmp;
-                } else {
-                    FontHelper.renderFontCentered(sb, FontHelper.healthInfoFont, AbstractCreature.TEXT[0], __instance.hb.cX, y + HEALTH_BAR_OFFSET_Y + HEALTH_TEXT_OFFSET_Y - 1.0F * Settings.scale, hbTextColor);
-                }
+            if (maxShield > 0) {
+                return SpireReturn.Return();
+            } else {
+                return SpireReturn.Continue();
             }
+//            if (maxShield <= 0) {
+//                float HEALTH_BAR_OFFSET_Y = ReflectionHacks.getPrivateStatic(AbstractCreature.class, "HEALTH_BAR_OFFSET_Y");
+//                float HEALTH_TEXT_OFFSET_Y = ReflectionHacks.getPrivateStatic(AbstractCreature.class, "HEALTH_TEXT_OFFSET_Y");
+//                Color hbTextColor = ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "hbTextColor");
+//                if ((Float) ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "targetHealthBarWidth") != 0.0F) {
+//                    float tmp = hbTextColor.a;
+//                    hbTextColor.a *= (float) ReflectionHacks.getPrivate(__instance, AbstractCreature.class, "healthHideTimer");
+//                    FontHelper.renderFontCentered(sb, FontHelper.healthInfoFont, __instance.currentHealth + "/" + __instance.maxHealth, __instance.hb.cX, y + HEALTH_BAR_OFFSET_Y + HEALTH_TEXT_OFFSET_Y + 5.0F * Settings.scale, hbTextColor);
+//                    hbTextColor.a = tmp;
+//                } else {
+//                    FontHelper.renderFontCentered(sb, FontHelper.healthInfoFont, AbstractCreature.TEXT[0], __instance.hb.cX, y + HEALTH_BAR_OFFSET_Y + HEALTH_TEXT_OFFSET_Y - 1.0F * Settings.scale, hbTextColor);
+//                }
+//            }
         }
     }
 

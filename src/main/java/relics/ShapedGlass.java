@@ -48,8 +48,8 @@ public class ShapedGlass extends CustomRelic implements LunarRelic, CustomSavabl
 
     private void applyEffect() {
         if (!isApplied) {
-            AbstractPlayer player = AbstractDungeon.player;
             this.flash();
+            AbstractPlayer player = AbstractDungeon.player;
             addToBot(new ApplyPowerAction(player, player, new GlassStrengthPower(player, POWER_AMOUNT), POWER_AMOUNT));
             addToBot(new RelicAboveCreatureAction(player, this));
             isApplied = true;
@@ -144,21 +144,4 @@ public class ShapedGlass extends CustomRelic implements LunarRelic, CustomSavabl
         return new TypeToken<Integer>() {
         }.getType();
     }
-
-/*
-   //抛去格挡后的伤害
-   @Override
-   public int onAttacked(DamageInfo info, int damageAmount) {
-       System.out.println(AbstractDungeon.player.currentBlock + "," + damageAmount);
-       return damageAmount;
-   }
-*/
-
-/*
-    //抛去格挡后的伤害
-    @Override
-    public void onAttack(DamageInfo info, int damageAmount, AbstractCreature target) {
-        System.out.println(target.currentBlock + "," + damageAmount);
-    }
-*/
 }

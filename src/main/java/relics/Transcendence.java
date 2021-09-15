@@ -31,6 +31,7 @@ public class Transcendence extends CustomRelic implements LunarRelic, CustomSava
     private static final int TURNS = 3;
     private static final String RECOVERY_ID = RiskTheRain.decorateId("ScarabRecovery");
     public boolean isRemoving = false;
+    public boolean isAdding = false;
 
     public Transcendence() {
         super(ID, IMG, OUTLINE, RelicTier.SHOP, LandingSound.MAGICAL);
@@ -78,8 +79,9 @@ public class Transcendence extends CustomRelic implements LunarRelic, CustomSava
     @Override
     public void onEquip() {
         try {
-            this.flash();
             if (!isEquipped) {
+                isAdding = true;
+                this.flash();
                 int health = AbstractDungeon.player.maxHealth;
                 if (health > 5) {
                     hpLoss = health - 5;
@@ -87,6 +89,7 @@ public class Transcendence extends CustomRelic implements LunarRelic, CustomSava
                 maxShield = MathUtils.floor(health * CONVERSION);
                 AbstractDungeon.player.decreaseMaxHealth(hpLoss);
                 RiskTheRain.addMaxBlueShield(AbstractDungeon.player, maxShield);
+                isAdding = false;
                 isEquipped = true;
             }
             if ((AbstractDungeon.getCurrRoom()).phase == AbstractRoom.RoomPhase.COMBAT) {
@@ -106,6 +109,7 @@ public class Transcendence extends CustomRelic implements LunarRelic, CustomSava
                 AbstractDungeon.player.increaseMaxHp(hpLoss, false);
                 hpLoss = 0;
                 maxShield = 0;
+                isRemoving = false;
                 isEquipped = false;
             }
             if ((AbstractDungeon.getCurrRoom()).phase == AbstractRoom.RoomPhase.COMBAT) {
@@ -155,16 +159,47 @@ public class Transcendence extends CustomRelic implements LunarRelic, CustomSava
         return damageAmount;
     }
 
-    public void increaseHealth(int amount) {
-        this.hpLoss += amount;
+    public int increaseHealth(int amount) {
+        int bu = 0;
+        if (AbstractDungeon.player.maxHealth < 5) {
+            int diff = 5 - AbstractDungeon.player.maxHealth;
+            if (diff > amount) {
+                bu = amount;
+            } else {
+                bu = diff;
+            }
+        }
+        this.hpLoss += amount - bu;
         int diff = Math.max(MathUtils.floor(
-                (AbstractDungeon.player.maxHealth + hpLoss) * CONVERSION
+                (AbstractDungeon.player.maxHealth + bu + hpLoss) * CONVERSION
         ) - maxShield, 0);
         RiskTheRain.addMaxBlueShield(AbstractDungeon.player, diff);
         if ((AbstractDungeon.getCurrRoom()).phase == AbstractRoom.RoomPhase.COMBAT) {
             RiskTheRain.addBlueShield(AbstractDungeon.player, diff);
         }
         this.maxShield += diff;
+        return bu;
+    }
+
+    public int decreaseHealth(int amount) {
+        int remain = 0;
+        if (amount > this.hpLoss) {
+            remain = amount - this.hpLoss;
+        }
+        this.hpLoss -= amount - remain;
+        int diff = Math.max(maxShield - MathUtils.floor(
+                (AbstractDungeon.player.maxHealth + hpLoss) * CONVERSION
+        ), 0);
+        RiskTheRain.addMaxBlueShield(AbstractDungeon.player, -diff);
+        if ((AbstractDungeon.getCurrRoom()).phase == AbstractRoom.RoomPhase.COMBAT) {
+            RiskTheRain.setBlueShield(AbstractDungeon.player, RiskTheRain.getMaxBlueShield(AbstractDungeon.player));
+        }
+        this.maxShield -= diff;
+        return remain;
+    }
+
+    public int getRealMaxHealth() {
+        return this.hpLoss + AbstractDungeon.player.maxHealth;
     }
 
     @Override

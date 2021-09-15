@@ -32,12 +32,8 @@
     "NAME": "集中收敛",
     "FLAVOR": "奇点会坍缩到某种程度，你的思维会逆向输出，进而逆转现实。",
     "DESCRIPTIONS": [
-      "Boss战中的敌人生命上限减少 #b",
-      "% ，但在战斗开始时获得 #y多层护甲 ，护甲层数随关卡变化。\n塔底： #b",
-      " 层。\n城市： #b",
-      " 层。\n深处： #b",
-      " 层。\n终幕： #b",
-      " 层。"
+      "Boss生命上限减少 #b",
+      "% ，但在战斗开始时获得 #y格挡 与 #y多层护甲 ，所得防御数值随关卡变化。"
     ]
   },
   "RiskTheRain:BeadsOfFealty": {
@@ -45,14 +41,77 @@
     "FLAVOR": "持有这串珠就意味着黑暗的诺言，世界的毁灭。",
     "DESCRIPTIONS": [
       "每个 #y忠诚佛珠 可充当 #b",
-      " 个 #y钥匙碎片 。"
+      " 个 #y宝石钥匙 。"
+    ]
+  },
+  "RiskTheRain:GestureOfTheDrowned": {
+    "NAME": "溺亡之姿",
+    "FLAVOR": "",
+    "DESCRIPTIONS": [
+      "手卡+2炼药（无色），用药-1血上限"
+    ]
+  },
+  "RiskTheRain:DefiantGouge": {
+    "NAME": "忤逆之凿",
+    "FLAVOR": "",
+    "DESCRIPTIONS": [
+      "问号房必出事件，事件过后必战斗。"
+    ]
+  },
+  "RiskTheRain:Corpsebloom": {
+    "NAME": "尸花",
+    "FLAVOR": "",
+    "DESCRIPTIONS": [
+      "1.2倍格挡，每回合格挡上限为0.8体力上限，顺延下回合"
+    ]
+  },
+  "RiskTheRain:Purity": {
+    "NAME": "纯粹",
+    "FLAVOR": "",
+    "DESCRIPTIONS": [
+      "全金卡，遗物全头环"
+    ]
+  },
+  "RiskTheRain:MercurialRachis": {
+    "NAME": "幻变脊柱",
+    "FLAVOR": "",
+    "DESCRIPTIONS": [
+      "奇数回合己方+1力量；偶数回敌方一个怪获得临时愤怒，攻击牌使用+1临时力量"
+    ]
+  },
+  "RiskTheRain:VisionsOfHeresy": {
+    "NAME": "异端幻视",
+    "FLAVOR": "",
+    "DESCRIPTIONS": [
+      "删所有攻击，+5张渴望凝视：1费，消耗，伤害3->5，灼魂8->11（灼魂：3回合后造成伤害）"
+    ]
+  },
+  "RiskTheRain:HooksOfHeresy": {
+    "NAME": "异端钩爪",
+    "FLAVOR": "",
+    "DESCRIPTIONS": [
+      "删所有防御，+5张万刃风暴：1费，消耗，防御5->7，临时反灼魂2->3"
+    ]
+  },
+  "RiskTheRain:StridesOfHeresy": {
+    "NAME": "异端步态",
+    "FLAVOR": "",
+    "DESCRIPTIONS": [
+      "3张影逝：2费，1灵体3回血，虚无消耗（升级没有虚无）；减敏-2"
+    ]
+  },
+  "RiskTheRain:EssencesOfHeresy": {
+    "NAME": "异端精髓",
+    "FLAVOR": "",
+    "DESCRIPTIONS": [
+      "加1张毁灭：1费，保留消耗，攻击牌加4灼魂，使用时灼魂层数翻倍再引爆（升级3倍）；力量-2"
     ]
   },
   "RiskTheRain:IfritsHorn": {
     "NAME": "伊夫利特之角",
     "FLAVOR":"",
     "DESCRIPTIONS":[
-      "加费，第6张烧卡"
+      "加费，第5张烧卡，洗牌加2灼烧，能打灼烧"
     ]
   },
   "RiskTheRain:MiredUrn": {
@@ -60,6 +119,20 @@
     "FLAVOR":"",
     "DESCRIPTIONS":[
       "加费，看不到自己血量"
+    ]
+  },
+  "RiskTheRain:LegendarySpark": {
+    "NAME": "传说火花",
+    "FLAVOR":"",
+    "DESCRIPTIONS":[
+      "加费，区间伤害，0%~180%"
+    ]
+  },
+  "RiskTheRain:PersonalShieldGenerator": {
+    "NAME": "个人护盾生成器",
+    "FLAVOR":"",
+    "DESCRIPTIONS":[
+      "6蓝盾"
     ]
   },
   "RiskTheRain:FilialImprinting": {
