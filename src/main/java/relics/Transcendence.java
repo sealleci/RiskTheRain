@@ -21,6 +21,7 @@ public class Transcendence extends CustomRelic implements LunarRelic, CustomSava
     private static final String SIGN = "Transcendence";
     public static final String ID = RiskTheRain.decorateId(SIGN);
     public static final Texture IMG = new Texture(RiskTheRain.getRelicImagePath(SIGN + ".png"));
+    public static final Texture L_IMG = new Texture(RiskTheRain.getLargeRelicImagePath(SIGN + ".png"));
     public static final Texture OUTLINE = new Texture(RiskTheRain.getOutlineImagePath(SIGN + ".png"));
     private int hpLoss = 0;
     private int maxShield = 0;
@@ -35,6 +36,7 @@ public class Transcendence extends CustomRelic implements LunarRelic, CustomSava
 
     public Transcendence() {
         super(ID, IMG, OUTLINE, RelicTier.SHOP, LandingSound.MAGICAL);
+        this.largeImg=L_IMG;
     }
 
     protected void finalize() {

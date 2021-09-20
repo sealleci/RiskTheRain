@@ -1,19 +1,18 @@
 package riskTheRain;
 
 import basemod.BaseMod;
-import basemod.interfaces.EditKeywordsSubscriber;
-import basemod.interfaces.EditRelicsSubscriber;
-import basemod.interfaces.EditStringsSubscriber;
-import basemod.interfaces.PostInitializeSubscriber;
+import basemod.interfaces.*;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.evacipated.cardcrawl.modthespire.lib.SpireInitializer;
 import com.google.gson.Gson;
+import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.core.AbstractCreature;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.evacipated.cardcrawl.mod.stslib.Keyword;
+import com.megacrit.cardcrawl.localization.CardStrings;
 import com.megacrit.cardcrawl.localization.PotionStrings;
 import com.megacrit.cardcrawl.localization.PowerStrings;
 import com.megacrit.cardcrawl.localization.RelicStrings;
@@ -24,6 +23,7 @@ import lunar.TheLunar;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import patches.CreatureHealthPatch;
+import patches.RenderRelicsCardPreviewPatch;
 import potions.EffigyOfGrief;
 import potions.GlowingMeteorite;
 import potions.HelfireTincture;
@@ -34,14 +34,16 @@ import patches.LunarCoinPatch;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Objects;
 
 @SpireInitializer
-public class RiskTheRain implements EditRelicsSubscriber, EditStringsSubscriber, EditKeywordsSubscriber, PostInitializeSubscriber {
+public class RiskTheRain implements EditRelicsSubscriber, EditStringsSubscriber, EditKeywordsSubscriber, EditCardsSubscriber, PostInitializeSubscriber {
     private static final Logger logger = LogManager.getLogger(RiskTheRain.class.getName());
-    private static final String[] lunarRelicIds = {"Transcendence", "ShapedGlass", "BrittleCrown", "FocusedConvergence", "BeadsOfFealty"};
+    private static final String[] lunarRelicIds = {"Transcendence", "ShapedGlass", "BrittleCrown", "FocusedConvergence", "BeadsOfFealty", "GestureOfTheDrowned"};
+    private static final String[] colorlessCardIds = {"PotionOfWhorl"};
     private static final String ROOT_L10N_PATH = "localizations";
-    private static final String[] jsonFileNames = {"relicStrings.json", "powerStrings.json", "potionStrings.json"};
-    private static final Class<?>[] stringClasses = {RelicStrings.class, PowerStrings.class, PotionStrings.class};
+    private static final String[] jsonFileNames = {"relicStrings.json", "powerStrings.json", "potionStrings.json", "cardStrings.json"};
+    private static final Class<?>[] stringClasses = {RelicStrings.class, PowerStrings.class, PotionStrings.class, CardStrings.class};
     private static final String keywordFileName = "keywordStrings.json";
     private static final String[] lunarPotionIds = {
             "HelfireTincture",
@@ -125,6 +127,16 @@ public class RiskTheRain implements EditRelicsSubscriber, EditStringsSubscriber,
         }
     }
 
+    private static AbstractCard getCard(String id) {
+        try {
+            Class<?> className = Class.forName("cards." + id);
+            return (AbstractCard) className.newInstance();
+        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+            logger.catching(e);
+            return null;
+        }
+    }
+
     public static String getFileReadString(String dir, String file) {
         return Gdx.files.internal(String.format("%s/%s", dir, file)).readString(String.valueOf(StandardCharsets.UTF_8));
     }
@@ -141,6 +153,10 @@ public class RiskTheRain implements EditRelicsSubscriber, EditStringsSubscriber,
         return Gdx.files.internal("images/relics/outline/" + resource);
     }
 
+    public static FileHandle getLargeRelicImagePath(String resource) {
+        return Gdx.files.internal("images/largeRelics/" + resource);
+    }
+
     public static FileHandle getPowerImagePath(String resource) {
         return Gdx.files.internal("images/powers/" + resource);
     }
@@ -149,9 +165,27 @@ public class RiskTheRain implements EditRelicsSubscriber, EditStringsSubscriber,
         return Gdx.files.internal(String.format("images/potions/%s/%s", name, resource));
     }
 
+    public static String getCardImagePath(String color, String resource) {
+        return String.format("images/cards/%s/%s", color, resource);
+    }
+
+    public static AbstractCard getCardToPreview(AbstractRelic relic) {
+        if (relic == null) {
+            return null;
+        }
+        return RenderRelicsCardPreviewPatch.RTRRelicCardPreviewFields.cardToPreview.get(relic);
+    }
+
+    public static void setCardToPreview(AbstractRelic relic, AbstractCard card) {
+        if (relic == null) {
+            return;
+        }
+        RenderRelicsCardPreviewPatch.RTRRelicCardPreviewFields.cardToPreview.set(relic, card);
+    }
+
     public static int getMaxBlueShield(AbstractCreature creature) {
         if (creature == null) {
-            return 1;
+            return 0;
         }
         return CreatureHealthPatch.RTRCreatureFields.maxBlueShield.get(creature);
     }
@@ -300,6 +334,13 @@ public class RiskTheRain implements EditRelicsSubscriber, EditStringsSubscriber,
         Keyword[] keywords = gson.fromJson(keywordJsonString, Keyword[].class);
         for (Keyword k : keywords) {
             BaseMod.addKeyword(k.PROPER_NAME, k.NAMES, k.DESCRIPTION);
+        }
+    }
+
+    @Override
+    public void receiveEditCards() {
+        for (String id : colorlessCardIds) {
+            BaseMod.addCard(Objects.requireNonNull(getCard(id)));
         }
     }
 

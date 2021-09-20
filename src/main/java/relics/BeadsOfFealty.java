@@ -20,12 +20,14 @@ public class BeadsOfFealty extends CustomRelic implements LunarRelic, CustomSava
     private static final String SIGN = "BeadsOfFealty";
     public static final String ID = RiskTheRain.decorateId(SIGN);
     public static final Texture IMG = new Texture(RiskTheRain.getRelicImagePath(SIGN + ".png"));
+    public static final Texture L_IMG = new Texture(RiskTheRain.getLargeRelicImagePath(SIGN + ".png"));
     public static final Texture OUTLINE = new Texture(RiskTheRain.getOutlineImagePath(SIGN + ".png"));
     private static final int PER_KEY = 1;
     private boolean isApplied = false;
 
     public BeadsOfFealty() {
         super(ID, IMG, OUTLINE, AbstractRelic.RelicTier.SHOP, AbstractRelic.LandingSound.MAGICAL);
+        this.largeImg=L_IMG;
     }
 
     @Override

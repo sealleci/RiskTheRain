@@ -1,37 +1,32 @@
 package relics;
 
 import basemod.abstracts.CustomRelic;
-import basemod.abstracts.CustomSavable;
-import com.badlogic.gdx.math.MathUtils;
+import cards.PotionOfWhorl;
 import com.badlogic.gdx.graphics.Texture;
-import com.google.gson.reflect.TypeToken;
-import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
-import com.megacrit.cardcrawl.actions.common.ReducePowerAction;
-import com.megacrit.cardcrawl.actions.common.RelicAboveCreatureAction;
-import com.megacrit.cardcrawl.characters.AbstractPlayer;
+import com.megacrit.cardcrawl.actions.common.MakeTempCardInHandAction;
+import com.megacrit.cardcrawl.cards.AbstractCard;
+import com.megacrit.cardcrawl.cards.CardGroup;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.rooms.AbstractRoom;
 import lunar.LunarRelic;
 import riskTheRain.RiskTheRain;
-import powers.GlassStrengthPower;
 
-import java.lang.reflect.Type;
+import java.util.Objects;
 
-public class ShapedGlass extends CustomRelic implements LunarRelic, CustomSavable<Integer> {
-    private static final String SIGN = "ShapedGlass";
+public class GestureOfTheDrowned extends CustomRelic implements LunarRelic {
+    private static final String SIGN = "GestureOfTheDrowned";
     public static final String ID = RiskTheRain.decorateId(SIGN);
     public static final Texture IMG = new Texture(RiskTheRain.getRelicImagePath(SIGN + ".png"));
     public static final Texture L_IMG = new Texture(RiskTheRain.getLargeRelicImagePath(SIGN + ".png"));
     public static final Texture OUTLINE = new Texture(RiskTheRain.getOutlineImagePath(SIGN + ".png"));
-    private static final int HP_DEC = 25;
-    private static final int POWER_AMOUNT = 1;
-    private int hpLoss = 0;
+    private static final int HP_LOSS = 1;
+    private static final int ADD_CARDS = 2;
     private boolean isApplied = false;
-    private static final String GLASSSTRENGTH_ID=  RiskTheRain.decorateId("GlassStrength");
 
-    public ShapedGlass() {
-        super(ID, IMG, OUTLINE, RelicTier.SHOP, LandingSound.MAGICAL);
+    public GestureOfTheDrowned() {
+        super(ID, IMG, OUTLINE, AbstractRelic.RelicTier.SHOP, AbstractRelic.LandingSound.MAGICAL);
+        RiskTheRain.setCardToPreview(this, new PotionOfWhorl());
         this.largeImg=L_IMG;
     }
 
@@ -40,9 +35,9 @@ public class ShapedGlass extends CustomRelic implements LunarRelic, CustomSavabl
         return String.format(
                 "%s%d%s%d%s",
                 DESCRIPTIONS[0],
-                HP_DEC,
+                ADD_CARDS,
                 DESCRIPTIONS[1],
-                POWER_AMOUNT,
+                HP_LOSS,
                 DESCRIPTIONS[2]
         );
     }
@@ -50,30 +45,29 @@ public class ShapedGlass extends CustomRelic implements LunarRelic, CustomSavabl
     private void applyEffect() {
         if (!isApplied) {
             this.flash();
-            AbstractPlayer player = AbstractDungeon.player;
-            addToBot(new ApplyPowerAction(player, player, new GlassStrengthPower(player, POWER_AMOUNT), POWER_AMOUNT));
-            addToBot(new RelicAboveCreatureAction(player, this));
+            addToTop(new MakeTempCardInHandAction(new PotionOfWhorl(), ADD_CARDS));
             isApplied = true;
         }
     }
 
     private void revokeEffect() {
         if (isApplied) {
-            AbstractPlayer player = AbstractDungeon.player;
-            addToBot(new ReducePowerAction(player, player, GLASSSTRENGTH_ID, POWER_AMOUNT));
-            isApplied = false;
+            int count = 0;
+            for (AbstractCard c : AbstractDungeon.player.masterDeck.group) {
+                if (Objects.equals(c.cardID, PotionOfWhorl.ID)) {
+                    AbstractDungeon.player.masterDeck.removeCard(c);
+                    count++;
+                }
+                if (count >= ADD_CARDS) {
+                    break;
+                }
+            }
         }
     }
 
     @Override
     public void onEquip() {
         try {
-            this.flash();
-            hpLoss = Math.max(MathUtils.ceil(HP_DEC / 100.0f * AbstractDungeon.player.maxHealth), 1);
-            if (hpLoss >= AbstractDungeon.player.maxHealth) {
-                hpLoss = AbstractDungeon.player.maxHealth - 1;
-            }
-            AbstractDungeon.player.decreaseMaxHealth(hpLoss);
             if ((AbstractDungeon.getCurrRoom()).phase == AbstractRoom.RoomPhase.COMBAT) {
                 applyEffect();
             }
@@ -85,7 +79,6 @@ public class ShapedGlass extends CustomRelic implements LunarRelic, CustomSavabl
     @Override
     public void onUnequip() {
         try {
-            AbstractDungeon.player.increaseMaxHp(hpLoss, false);
             if ((AbstractDungeon.getCurrRoom()).phase == AbstractRoom.RoomPhase.COMBAT) {
                 revokeEffect();
             }
@@ -114,6 +107,11 @@ public class ShapedGlass extends CustomRelic implements LunarRelic, CustomSavabl
     }
 
     @Override
+    public void onUsePotion() {
+        AbstractDungeon.player.decreaseMaxHealth(HP_LOSS);
+    }
+
+    @Override
     public int getPrice() {
         return 250;
     }
@@ -125,24 +123,6 @@ public class ShapedGlass extends CustomRelic implements LunarRelic, CustomSavabl
 
     @Override
     public AbstractRelic makeCopy() {
-        return new ShapedGlass();
-    }
-
-    @Override
-    public Integer onSave() {
-        return this.hpLoss;
-    }
-
-    @Override
-    public void onLoad(Integer hpLoss) {
-        if (hpLoss != null) {
-            this.hpLoss = hpLoss;
-        }
-    }
-
-    @Override
-    public Type savedType() {
-        return new TypeToken<Integer>() {
-        }.getType();
+        return new GestureOfTheDrowned();
     }
 }

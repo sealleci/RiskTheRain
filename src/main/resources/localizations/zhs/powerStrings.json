@@ -2,15 +2,15 @@
   "RiskTheRain:GlassStrength": {
     "NAME": "玻璃力量",
     "DESCRIPTIONS": [
-      "角色伤害增加 #b",
+      "攻击伤害增加 #b",
       "% 。"
     ]
   },
   "RiskTheRain:ScarabRecovery": {
     "NAME": "圣甲虫恢复",
     "DESCRIPTIONS": [
-      "将在 #b",
-      " 个回合后回满 #y蓝护盾 。"
+      "在 #b",
+      " 个回合后，回满 #y蓝护盾 。"
     ]
   },
   "RiskTheRain:BrittleCoin": {

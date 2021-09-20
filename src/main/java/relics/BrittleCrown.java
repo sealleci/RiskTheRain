@@ -1,5 +1,6 @@
 package relics;
 
+import basemod.ReflectionHacks;
 import basemod.abstracts.CustomRelic;
 import com.badlogic.gdx.graphics.Texture;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
@@ -18,6 +19,7 @@ public class BrittleCrown extends CustomRelic implements LunarRelic {
     public static final String ID = RiskTheRain.decorateId(SIGN);
     public static final Texture IMG = new Texture(RiskTheRain.getRelicImagePath(SIGN + ".png"));
     public static final Texture OUTLINE = new Texture(RiskTheRain.getOutlineImagePath(SIGN + ".png"));
+    public static final Texture L_IMG = new Texture(RiskTheRain.getLargeRelicImagePath(SIGN + ".png"));
     private static final String COIN_ID = RiskTheRain.decorateId("BrittleCoin");
     private static final int perAttackedDamage = 1;
     private static final int perAttackedLoseStack = 2;
@@ -29,9 +31,9 @@ public class BrittleCrown extends CustomRelic implements LunarRelic {
     private int accumulateAttackedAmount = 0;
     private int stacks = 0;
 
-
     public BrittleCrown() {
         super(ID, IMG, OUTLINE, RelicTier.SHOP, LandingSound.MAGICAL);
+        this.largeImg=L_IMG;
     }
 
     @Override
