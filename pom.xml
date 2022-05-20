@@ -12,11 +12,11 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <steamFolder>C:/Program Files (x86)/Steam/</steamFolder>
+        <steamFolder>D:/steam/</steamFolder>
         <workshopFolder>${steamFolder}steamapps/workshop/content/646570/</workshopFolder>
         <stsPath>${steamFolder}steamapps/common/SlayTheSpire/</stsPath>
-        <SlayTheSpire.version>2.2</SlayTheSpire.version>
-        <ModTheSpire.version>3.23.2</ModTheSpire.version>
+        <SlayTheSpire.version>2.3</SlayTheSpire.version>
+        <ModTheSpire.version>3.26.0</ModTheSpire.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <assembly.skipAssembly>true</assembly.skipAssembly>
     </properties>
@@ -38,14 +38,14 @@
         <dependency>
             <groupId>basemod</groupId>
             <artifactId>basemod</artifactId>
-            <version>5.33.1</version>
+            <version>5.41.0</version>
             <scope>system</scope>
             <systemPath>${workshopFolder}1605833019/BaseMod.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>come.evacipated.cardcrawl</groupId>
             <artifactId>stslib</artifactId>
-            <version>1.24.0</version>
+            <version>2.3.0</version>
             <scope>system</scope>
             <systemPath>${workshopFolder}1609158507/StSLib.jar</systemPath>
         </dependency>

@@ -3,18 +3,16 @@ package relics;
 import basemod.abstracts.CustomRelic;
 import basemod.abstracts.CustomSavable;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.MathUtils;
 import com.google.gson.reflect.TypeToken;
-import com.megacrit.cardcrawl.actions.common.RemoveSpecificPowerAction;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
-import com.megacrit.cardcrawl.rooms.AbstractRoom;
 import lunar.LunarRelic;
 import riskTheRain.RiskTheRain;
 
 import java.lang.reflect.Type;
 import java.util.Objects;
+
 
 public class BeadsOfFealty extends CustomRelic implements LunarRelic, CustomSavable<Boolean> {
     private static final String SIGN = "BeadsOfFealty";
@@ -27,7 +25,7 @@ public class BeadsOfFealty extends CustomRelic implements LunarRelic, CustomSava
 
     public BeadsOfFealty() {
         super(ID, IMG, OUTLINE, AbstractRelic.RelicTier.SHOP, AbstractRelic.LandingSound.MAGICAL);
-        this.largeImg=L_IMG;
+        this.largeImg = L_IMG;
     }
 
     @Override
@@ -46,20 +44,13 @@ public class BeadsOfFealty extends CustomRelic implements LunarRelic, CustomSava
                     isAtBoss() &&
                     (AbstractDungeon.ascensionLevel < 20 || AbstractDungeon.bossList.size() < 2)) {
                 this.flash();
-                do {
-                    if (!Settings.hasRubyKey) {
-                        Settings.hasRubyKey = true;
-                        break;
-                    }
-                    if (!Settings.hasEmeraldKey) {
-                        Settings.hasEmeraldKey = true;
-                        break;
-                    }
-                    if (!Settings.hasSapphireKey) {
-                        Settings.hasSapphireKey = true;
-                        break;
-                    }
-                } while (false);
+                if (!Settings.hasRubyKey) {
+                    Settings.hasRubyKey = true;
+                } else if (!Settings.hasEmeraldKey) {
+                    Settings.hasEmeraldKey = true;
+                } else if (!Settings.hasSapphireKey) {
+                    Settings.hasSapphireKey = true;
+                }
                 usedUp();
                 isApplied = true;
             }
