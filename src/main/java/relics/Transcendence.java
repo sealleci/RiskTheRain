@@ -17,6 +17,7 @@ import riskTheRain.RiskTheRain;
 
 import java.lang.reflect.Type;
 
+// TODO: 复活时要加盾
 public class Transcendence extends CustomRelic implements LunarRelic, CustomSavable<Transcendence.BlueShieldSave> {
     private static final String SIGN = "Transcendence";
     public static final String ID = RiskTheRain.decorateId(SIGN);
@@ -36,7 +37,7 @@ public class Transcendence extends CustomRelic implements LunarRelic, CustomSava
 
     public Transcendence() {
         super(ID, IMG, OUTLINE, RelicTier.SHOP, LandingSound.MAGICAL);
-        this.largeImg=L_IMG;
+        this.largeImg = L_IMG;
     }
 
     protected void finalize() {
@@ -162,25 +163,21 @@ public class Transcendence extends CustomRelic implements LunarRelic, CustomSava
     }
 
     public int increaseHealth(int amount) {
-        int bu = 0;
+        int increment = 0;
         if (AbstractDungeon.player.maxHealth < 5) {
             int diff = 5 - AbstractDungeon.player.maxHealth;
-            if (diff > amount) {
-                bu = amount;
-            } else {
-                bu = diff;
-            }
+            increment = Math.min(diff, amount);
         }
-        this.hpLoss += amount - bu;
+        this.hpLoss += amount - increment;
         int diff = Math.max(MathUtils.floor(
-                (AbstractDungeon.player.maxHealth + bu + hpLoss) * CONVERSION
+                (AbstractDungeon.player.maxHealth + increment + hpLoss) * CONVERSION
         ) - maxShield, 0);
         RiskTheRain.addMaxBlueShield(AbstractDungeon.player, diff);
         if ((AbstractDungeon.getCurrRoom()).phase == AbstractRoom.RoomPhase.COMBAT) {
             RiskTheRain.addBlueShield(AbstractDungeon.player, diff);
         }
         this.maxShield += diff;
-        return bu;
+        return increment;
     }
 
     public int decreaseHealth(int amount) {

@@ -6,7 +6,7 @@ import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.vfx.combat.DamageNumberEffect;
 
 public class BlueShieldNumberEffect extends DamageNumberEffect {
-    private Color originalColor;
+    private final Color originalColor;
 
     public BlueShieldNumberEffect(AbstractCreature target, float x, float y, int amt) {
         super(target, x, y, amt);

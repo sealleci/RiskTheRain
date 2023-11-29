@@ -1,5 +1,6 @@
 /.idea/
 /target/
 /sendToDevs/
+/src/main/resources/images/*
 
 *.psd

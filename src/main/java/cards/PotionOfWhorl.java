@@ -48,7 +48,7 @@ public class PotionOfWhorl extends CustomCard {
                 potions.add(p);
             }
         }
-        if (potions.size() > 0) {
+        if (!potions.isEmpty()) {
             return potions.get(AbstractDungeon.potionRng.random(potions.size() - 1));
         } else {
             return null;

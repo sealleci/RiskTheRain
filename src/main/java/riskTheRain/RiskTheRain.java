@@ -348,16 +348,12 @@ public class RiskTheRain implements EditRelicsSubscriber, EditStringsSubscriber,
     public void receivePostInitialize() {
         BaseMod.registerCustomReward(
                 LunarCoinPatch.LUNAR_COIN,
-                rewardSave -> {
-                    return new LunarCoinReward(rewardSave.amount);
-                },
-                customReward -> {
-                    return new RewardSave(
-                            customReward.type.toString(),
-                            LunarCoinReward.ID,
-                            ((LunarCoinReward) customReward).amount,
-                            0);
-                }
+                rewardSave -> new LunarCoinReward(rewardSave.amount),
+                customReward -> new RewardSave(
+                        customReward.type.toString(),
+                        LunarCoinReward.ID,
+                        ((LunarCoinReward) customReward).amount,
+                        0)
         );
     }
 }

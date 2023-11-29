@@ -33,7 +33,7 @@ public class BrittleCrown extends CustomRelic implements LunarRelic {
 
     public BrittleCrown() {
         super(ID, IMG, OUTLINE, RelicTier.SHOP, LandingSound.MAGICAL);
-        this.largeImg=L_IMG;
+        this.largeImg = L_IMG;
     }
 
     @Override
